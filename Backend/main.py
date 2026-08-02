@@ -20,7 +20,7 @@ def main():
 
         result_json = check_description(temp_taboo_dict, target_word, description)
         result = json.loads(result_json)
-        if not result["isvalid"]:
+        if not result["is_valid"]:
             print(f"Warning! You used taboo words: {', '.join(result['used_taboo_words'])}")
             continue
 

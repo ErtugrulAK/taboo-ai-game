@@ -35,10 +35,10 @@ def check_description(taboo_dict: dict, target_word: str, description: str) -> s
         if taboo_lemmas.intersection(description_lemmas):
             used_taboo_words.append(taboo_word)
 
-    isvalid = len(used_taboo_words) == 0
+    is_valid = len(used_taboo_words) == 0
 
     result = {
-        "isvalid": isvalid,
+        "is_valid": is_valid,
         "used_taboo_words": used_taboo_words
     }
 

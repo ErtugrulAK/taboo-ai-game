@@ -108,7 +108,7 @@ function App() {
         }),
       });
       const checkResult = await checkResponse.json();
-      if (!checkResult.isvalid) {
+      if (!checkResult.is_valid) {
         setScore((prevScore) => Math.max(0, prevScore - 1));
         const usedTabooWords = checkResult.used_taboo_words;
         
