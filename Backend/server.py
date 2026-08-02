@@ -46,10 +46,6 @@ async def read_root():
     return {"message": "Taboo AI Backend is running!"}
 
 
-
-
-
-
 @app.post("/api/get-word")
 async def get_word(request: GetWordRequest):
     all_words = list(taboo_dict.keys())
@@ -62,16 +58,10 @@ async def get_word(request: GetWordRequest):
     return {"word": target_word, "taboo": taboo_dict[target_word]}
 
 
-
-
-
 @app.post("/api/check-description")
 async def check_desc_endpoint(request: DescriptionCheckRequest):
     result_json_str = check_description(taboo_dict, request.target_word, request.description)
     return json.loads(result_json_str)
-
-
-
 
 
 @app.post("/api/guess-word")

@@ -29,5 +29,6 @@ async def guess_object(description: str) -> str:
                 contents=f"Guess: '{description}'. Two words."
             )
             return alt.text.strip()
-        except:
+        except Exception as fallback_error:
+            print(f"Fallback AI Error: {fallback_error}")
             return "Guess could not be retrieved."
