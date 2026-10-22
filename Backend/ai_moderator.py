@@ -19,8 +19,9 @@ def normalize_word(word):
     return set([lemma_noun, lemma_verb])
 
 def check_description(taboo_dict: dict, target_word: str, description: str) -> str:
-    taboo_words = taboo_dict.get(target_word, [])
-    taboo_words.append(target_word)
+    # Work on a copy: appending to the list returned by .get() would
+    # permanently mutate taboo_dict and leak the target word between turns.
+    taboo_words = list(taboo_dict.get(target_word, [])) + [target_word]
     
     description_words = re.findall(r'\b\w+\b', description.lower())
 

@@ -22,7 +22,7 @@ function App() {
   const [highlightMainWord, setHighlightMainWord] = useState(false);
   const timerRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const fetchWord = async (currentUsedWords) => {
     try {
