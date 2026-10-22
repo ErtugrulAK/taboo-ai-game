@@ -1,122 +1,83 @@
-# 🤫 AI Taboo Game
+# AI Taboo Game
 
-An interactive, AI-powered Taboo game built with **React**, **FastAPI**, **Google Gemini API**, and **NLTK Lemmatization**.
+A local two-role Taboo game: one player sees a secret word plus its taboo
+list and writes descriptions in chat; a FastAPI backend validates every
+description with NLTK lemmatization (so `describing`/`described` are caught by
+taboo word `describe`) and then asks Google Gemini to guess the word from the
+combined description. React (Vite) frontend, REST backend, no database — game
+state lives in the browser.
 
-In this game, human players describe a secret target word without using forbidden taboo words. The system uses **NLTK-based natural language processing** to moderate descriptions in real-time and leverages **Google Gemini LLM** to attempt to guess the secret target word.
+## Game flow
 
----
+1. Start game → frontend requests a random card from `Backend/taboo_words.json`
+   (word + taboo list, never reusing a word within a round).
+2. 60-second timer, 3 passes, per-round score kept client-side
+   (`Frontend/src/App.jsx`).
+3. Every chat message is POSTed to `/api/check-description`; if a taboo
+   lemma is detected the message is rejected and the offending words are
+   highlighted.
+4. On submit, `/api/guess-word` sends the description to
+   `gemini-2.5-flash-lite` (fallback: `gemini-flash-lite-latest`) and the
+   guess is shown for the human referee to accept or reject.
 
-## ✨ Features
+## Backend
 
-- 🎯 **Real-time Taboo Moderation:** NLTK lemmatizer checks descriptions for exact words and root variations (nouns & verbs) to prevent forbidden word usage.
-- 🤖 **AI-Powered Guesser:** Integrates Google Gemini (`gemini-2.5-flash-lite`) to analyze combined descriptions and provide smart guesses.
-- ⚡ **Fast & Responsive UI:** Built with React 19, Vite, and custom modern CSS dark-mode styling.
-- ⏱️ **Game Mechanics:** Timer countdown, pass limit handling, real-time score keeping, and game-over state management.
-- 🌐 **RESTful Backend API:** Clean FastAPI endpoints for word fetching, validation, and AI guessing.
+```bash
+cd Backend
+python -m venv venv
+# Windows cmd: venv\Scripts\activate
+# Windows PowerShell: .\venv\Scripts\Activate.ps1
+# Linux / macOS: source venv/bin/activate
+pip install -r requirements.txt
+```
 
----
+Create `Backend/.env` (read via python-dotenv at import time):
 
-## 🛠️ Tech Stack
+```env
+GOOGLE_API_KEY=your_gemini_api_key_here
+```
 
-### Frontend
-- **Framework:** React 19 + Vite
-- **Styling:** CSS3 (Custom Dark Mode & Animations)
-- **HTTP Client:** Fetch API
+Run from `Backend/` (word deck is loaded relative to the working directory):
 
-### Backend
-- **Framework:** FastAPI + Uvicorn
-- **AI Model:** Google GenAI SDK (`google-genai` / Gemini API)
-- **NLP Engine:** NLTK (`WordNetLemmatizer`)
-- **Config & Validation:** `python-dotenv`, Pydantic
+```bash
+python gameStart.py            # or: python -m uvicorn server:app --reload
+```
 
----
+Server listens on http://localhost:8000. It also boots **without** a key
+(startup warning printed): moderation and word endpoints keep working and
+`/api/guess-word` returns the fallback string until `GOOGLE_API_KEY` is set.
+NLTK's WordNet corpus downloads automatically on first use; see
+`Backend/COMMANDS.md` to prefetch.
 
-## 🚀 Getting Started
+### Endpoints
 
-### Prerequisites
-- **Node.js** (v18+) and **npm**
-- **Python** (v3.10+)
-- **Google Gemini API Key** ([Get your API key here](https://aistudio.google.com/))
+| Endpoint | Method | Notes |
+| `/` | GET | health check |
+| `/api/get-word` | POST | random unused card (`{used_words}`) |
+| `/api/check-description` | POST | `{target_word, description}` → `{is_valid, used_taboo_words}` via WordNet lemmas (noun+verb) |
+| `/api/guess-word` | POST | `{description}` → `{guess}`. With an invalid/missing key the client layer swallows the error and returns `{"guess": "Guess could not be retrieved."}` (HTTP 200); the 503 path exists for unexpected errors only |
 
----
+CORS is restricted to the Vite dev origins (`localhost:5173`).
 
-### 1. Backend Setup
+## Frontend
 
-1. **Navigate to the Backend directory:**
-   ```bash
-   cd Backend
-   ```
+```bash
+cd Frontend
+npm install
+npm run dev            # http://localhost:5173
+```
 
-2. **Create and activate a Python virtual environment:**
-   - **Linux / macOS:**
-     ```bash
-     python3 -m venv venv
-     source venv/Scripts/activate
-     ```
-   - **Windows (PowerShell):**
-     ```powershell
-     python -m venv venv
-     .\venv\Scripts\Activate.ps1
-     ```
+The frontend reads `VITE_API_URL` from `Frontend/.env` (optional; defaults to
+`http://localhost:8000`).
 
-3. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Known limitations
 
-4. **Set up Environment Variables:**
-   Create a `.env` file inside the `Backend` directory:
-   ```env
-   GOOGLE_API_KEY=your_gemini_api_key_here
-   ```
+- Gemini guessing is single-shot and intentionally terse ("two words"); vague
+  descriptions simply produce wrong guesses — the human referee decides.
+- The taboo deck is a static 30-entry JSON file; no admin tooling to extend it.
+- No database, no sessions, no multiplayer rooms; refresh loses the round.
+- No automated tests. Manually verified: moderation unit flow incl. cross-turn state, backend boot, all endpoints except a real Gemini guess call, and `vite build` of the frontend.
 
-5. **Start the FastAPI Backend Server:**
-   ```bash
-   python gameStart.py
-   # OR
-   python -m uvicorn server:app --reload
-   ```
-   The backend server will run at `http://localhost:8000`.
+## License
 
----
-
-### 2. Frontend Setup
-
-1. **Navigate to the Frontend directory:**
-   ```bash
-   cd Frontend
-   ```
-
-2. **Install Node.js packages:**
-   ```bash
-   npm install
-   ```
-
-3. **Set up Environment Variables:**
-   Create a `.env` file inside the `Frontend` directory:
-   ```env
-   VITE_API_URL=http://localhost:8000
-   ```
-
-4. **Start the Vite Frontend Server:**
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:5173` in your browser.
-
----
-
-## 📡 API Reference
-
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `GET /` | `GET` | Health check endpoint |
-| `/api/get-word` | `POST` | Fetches a random target word and taboo list |
-| `/api/check-description` | `POST` | Validates player description against taboo words via NLTK |
-| `/api/guess-word` | `POST` | Sends description to Gemini AI model for guessing |
-
----
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
+MIT — see [LICENSE](LICENSE).

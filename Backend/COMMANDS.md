@@ -13,14 +13,19 @@ python -m venv venv
 
 ### Activate Virtual Environment
 
+- **Windows (cmd):**
+  ```bat
+  venv\Scripts\activate
+  ```
+
 - **Windows (PowerShell):**
   ```powershell
   .\venv\Scripts\Activate.ps1
   ```
 
-- **Linux / macOS / Git Bash:**
+- **Linux / macOS (bash/zsh):**
   ```bash
-  source venv/Scripts/activate
+  source venv/bin/activate
   ```
 
 ---
@@ -32,9 +37,10 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-### Download Required NLTK Datasets
+### NLTK Data
+`ai_moderator.py` auto-downloads the WordNet corpus on first use. To prefetch manually:
 ```bash
-python -m nltk.downloader wordnet
+python -m nltk.downloader wordnet omw-1.4
 ```
 
 ---
