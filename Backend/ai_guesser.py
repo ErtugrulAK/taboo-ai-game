@@ -5,14 +5,30 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 api_key = os.getenv("GOOGLE_API_KEY", "")
 
-client = genai.Client(api_key=api_key)
+_client = None
+
+
+def _get_client():
+    """Create the Gemini client on first use so the server can boot without a key."""
+    global _client
+    if _client is None:
+        if not api_key:
+            raise RuntimeError(
+                "GOOGLE_API_KEY is not set; create Backend/.env with your key."
+            )
+        _client = genai.Client(api_key=api_key)
+    return _client
+
+
+if not api_key:
+    print("WARNING: GOOGLE_API_KEY missing - /api/guess-word will return the fallback message.")
 
 async def guess_object(description: str) -> str:
     if not description or len(description.strip()) < 3:
         return "Description too short."
 
     try:
-        response = client.models.generate_content(
+        response = _get_client().models.generate_content(
             model="models/gemini-2.5-flash-lite",
             contents=f"Guess: '{description}'. Two words only, comma separated."
         )
@@ -24,7 +40,7 @@ async def guess_object(description: str) -> str:
     except Exception as e:
         print(f"Cost-Oriented AI Error: {e}")
         try:
-            alt = client.models.generate_content(
+            alt = _get_client().models.generate_content(
                 model="models/gemini-flash-lite-latest",
                 contents=f"Guess: '{description}'. Two words."
             )

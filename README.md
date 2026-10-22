@@ -43,8 +43,11 @@ Run from `Backend/` (word deck is loaded relative to the working directory):
 python gameStart.py            # or: python -m uvicorn server:app --reload
 ```
 
-Server listens on http://localhost:8000. NLTK's WordNet corpus downloads
-automatically on first use; see `Backend/COMMANDS.md` to prefetch.
+Server listens on http://localhost:8000. It also boots **without** a key
+(startup warning printed): moderation and word endpoints keep working and
+`/api/guess-word` returns the fallback string until `GOOGLE_API_KEY` is set.
+NLTK's WordNet corpus downloads automatically on first use; see
+`Backend/COMMANDS.md` to prefetch.
 
 ### Endpoints
 
