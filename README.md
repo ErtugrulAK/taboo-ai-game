@@ -7,6 +7,20 @@ taboo word `describe`) and then asks Google Gemini to guess the word from the
 combined description. React (Vite) frontend, REST backend, no database — game
 state lives in the browser.
 
+
+## What it looks like
+
+![Start screen](docs/screenshots/taboo_home.png)
+*The start screen — dark single-page UI, no account needed.*
+
+![Round in progress](docs/screenshots/taboo_round.png)
+*A round: secret word card with its taboo list, countdown, passes and score.*
+
+![AI response](docs/screenshots/taboo_result.png)
+*Sending a description and the reply bubble. Captured without a Gemini key:
+the fallback line "Guess could not be retrieved." is the app's documented
+keyless behavior — with your own key the AI's guess appears here.*
+
 ## Game flow
 
 1. Start game → frontend requests a random card from `Backend/taboo_words.json`
